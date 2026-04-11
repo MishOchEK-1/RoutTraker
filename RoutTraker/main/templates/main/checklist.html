@@ -1,0 +1,953 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>RoutTraker</title>
+    <style>
+        :root {
+            --bg: #f4f1ea;
+            --panel: #fffdfa;
+            --panel-soft: #f8f6f1;
+            --line: #e3ddd0;
+            --line-strong: #d2c7b2;
+            --ink: #1d2530;
+            --muted: #66707e;
+            --done: #207a49;
+            --done-soft: #eef9f1;
+            --problem: #be4d2f;
+            --problem-soft: #fdf0eb;
+            --unchecked: #7f6b46;
+            --unchecked-soft: #faf4e8;
+            --accent: #234058;
+            --shadow: 0 18px 42px rgba(33, 38, 46, 0.08);
+            --radius-xl: 24px;
+            --radius-lg: 18px;
+            --radius-md: 12px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        body {
+            margin: 0;
+            min-height: 100vh;
+            font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+            color: var(--ink);
+            background:
+                linear-gradient(180deg, rgba(255, 255, 255, 0.58), rgba(255, 255, 255, 0)),
+                linear-gradient(135deg, #f8f5ef 0%, #efebe2 100%);
+        }
+
+        .app {
+            width: min(1480px, calc(100vw - 28px));
+            margin: 18px auto 28px;
+        }
+
+        .hero,
+        .panel {
+            background: var(--panel);
+            border: 1px solid rgba(255, 255, 255, 0.7);
+            border-radius: var(--radius-xl);
+            box-shadow: var(--shadow);
+        }
+
+        .hero {
+            display: grid;
+            grid-template-columns: 1.4fr 1fr;
+            gap: 20px;
+            padding: 22px;
+            margin-bottom: 16px;
+        }
+
+        .eyebrow {
+            margin: 0 0 8px;
+            font-size: 12px;
+            letter-spacing: 0.14em;
+            text-transform: uppercase;
+            color: #8d7042;
+        }
+
+        h1 {
+            margin: 0;
+            font-size: clamp(1.8rem, 2.6vw, 2.8rem);
+            line-height: 1;
+            font-family: "Fraunces", Georgia, serif;
+        }
+
+        .subtitle {
+            margin: 12px 0 0;
+            color: var(--muted);
+            max-width: 64ch;
+            line-height: 1.6;
+        }
+
+        .hero-side {
+            display: grid;
+            gap: 14px;
+            align-content: start;
+        }
+
+        .toolbar {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 10px;
+            align-items: center;
+        }
+
+        .pill,
+        .ghost-button,
+        .danger-button,
+        .primary-button,
+        .seg-button,
+        .copy-button {
+            border: none;
+            border-radius: 999px;
+            font: inherit;
+        }
+
+        .pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 10px;
+            width: fit-content;
+            padding: 10px 14px;
+            border: 1px solid var(--line);
+            background: var(--panel-soft);
+            font-weight: 600;
+        }
+
+        .pill strong {
+            color: var(--accent);
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: var(--done);
+            box-shadow: 0 0 0 8px rgba(32, 122, 73, 0.12);
+        }
+
+        .meta-block {
+            display: grid;
+            gap: 6px;
+            color: var(--muted);
+        }
+
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(4, minmax(0, 1fr));
+            gap: 12px;
+        }
+
+        .stat {
+            padding: 14px 16px;
+            border-radius: var(--radius-lg);
+            background: var(--panel-soft);
+            border: 1px solid var(--line);
+        }
+
+        .stat-label {
+            display: block;
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.7rem;
+            font-weight: 700;
+        }
+
+        .layout {
+            display: grid;
+            grid-template-columns: 360px 1fr;
+            gap: 16px;
+            align-items: start;
+        }
+
+        .sidebar {
+            display: grid;
+            gap: 16px;
+            position: sticky;
+            top: 16px;
+        }
+
+        .panel {
+            padding: 18px;
+        }
+
+        .panel-header {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            align-items: center;
+            margin-bottom: 14px;
+        }
+
+        .panel-title {
+            margin: 0;
+            font-size: 1.1rem;
+            font-family: "Fraunces", Georgia, serif;
+        }
+
+        .ghost-button,
+        .danger-button,
+        .primary-button,
+        .copy-button {
+            cursor: pointer;
+            transition: transform 0.16s ease, background 0.16s ease;
+        }
+
+        .ghost-button,
+        .copy-button {
+            padding: 10px 14px;
+            border: 1px solid var(--line);
+            background: white;
+            color: var(--ink);
+        }
+
+        .primary-button {
+            padding: 10px 14px;
+            background: var(--accent);
+            color: #fff;
+        }
+
+        .danger-button {
+            padding: 10px 14px;
+            background: var(--problem);
+            color: #fff;
+        }
+
+        .ghost-button:hover,
+        .danger-button:hover,
+        .primary-button:hover,
+        .copy-button:hover,
+        .seg-button:hover {
+            transform: translateY(-1px);
+        }
+
+        .muted {
+            color: var(--muted);
+        }
+
+        .flash {
+            min-height: 18px;
+            color: var(--muted);
+        }
+
+        .flash.is-error {
+            color: var(--problem);
+        }
+
+        .report-box {
+            width: 100%;
+            min-height: 180px;
+            resize: vertical;
+            border: 1px solid var(--line-strong);
+            border-radius: var(--radius-md);
+            padding: 14px;
+            font: inherit;
+            line-height: 1.55;
+            background: var(--panel-soft);
+            color: var(--ink);
+        }
+
+        .activity-list {
+            display: grid;
+            gap: 10px;
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+
+        .activity-row {
+            padding: 12px 14px;
+            border-radius: 14px;
+            background: var(--panel-soft);
+            border: 1px solid var(--line);
+            display: grid;
+            gap: 6px;
+        }
+
+        .activity-time {
+            font-size: 0.86rem;
+            color: var(--muted);
+        }
+
+        .table-wrap {
+            overflow-x: auto;
+            border: 1px solid var(--line);
+            border-radius: 20px;
+        }
+
+        .table-head,
+        .cabinet-row {
+            display: grid;
+            grid-template-columns: 110px 140px 300px minmax(260px, 1fr) 220px;
+            gap: 12px;
+            align-items: center;
+            min-width: 1120px;
+        }
+
+        .table-head {
+            padding: 14px 16px;
+            background: #f5f1e8;
+            color: var(--muted);
+            font-size: 0.88rem;
+            font-weight: 600;
+            position: sticky;
+            top: 0;
+            z-index: 1;
+        }
+
+        .row-list {
+            display: grid;
+        }
+
+        .cabinet-row {
+            padding: 12px 16px;
+            background: white;
+            border-top: 1px solid var(--line);
+        }
+
+        .cabinet-row.status-done {
+            background: linear-gradient(90deg, rgba(32, 122, 73, 0.05), rgba(255, 255, 255, 0));
+        }
+
+        .cabinet-row.status-problem {
+            background: linear-gradient(90deg, rgba(190, 77, 47, 0.06), rgba(255, 255, 255, 0));
+        }
+
+        .cabinet-cell {
+            min-width: 0;
+        }
+
+        .cabinet-name {
+            font-weight: 700;
+            font-size: 1rem;
+        }
+
+        .include-chip {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 38px;
+            padding: 0 12px;
+            border-radius: 999px;
+            background: var(--panel-soft);
+            border: 1px solid var(--line);
+            font-size: 0.92rem;
+            white-space: nowrap;
+        }
+
+        .include-chip.is-off {
+            color: var(--muted);
+            background: #f1f0ed;
+        }
+
+        .segmented {
+            display: inline-flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .seg-button {
+            min-height: 40px;
+            padding: 0 12px;
+            border: 1px solid var(--line);
+            background: white;
+            cursor: pointer;
+        }
+
+        .seg-button.is-active[data-status="unchecked"] {
+            background: var(--unchecked-soft);
+            border-color: #d9c8a3;
+            color: var(--unchecked);
+        }
+
+        .seg-button.is-active[data-status="done"] {
+            background: var(--done-soft);
+            border-color: #b8dfc7;
+            color: var(--done);
+        }
+
+        .seg-button.is-active[data-status="problem"] {
+            background: var(--problem-soft);
+            border-color: #efc0b2;
+            color: var(--problem);
+        }
+
+        .seg-button:disabled,
+        .comment-input:disabled {
+            cursor: not-allowed;
+            opacity: 0.55;
+        }
+
+        .comment-stack {
+            display: grid;
+            gap: 6px;
+        }
+
+        .comment-input {
+            width: 100%;
+            min-height: 40px;
+            border-radius: 12px;
+            border: 1px solid var(--line-strong);
+            padding: 0 12px;
+            font: inherit;
+            background: white;
+        }
+
+        .row-note,
+        .save-indicator {
+            color: var(--muted);
+            font-size: 0.84rem;
+        }
+
+        .save-indicator.is-error {
+            color: var(--problem);
+        }
+
+        .save-indicator.is-saving {
+            color: #8d7042;
+        }
+
+        .save-indicator.is-success {
+            color: var(--done);
+        }
+
+        .empty-state {
+            padding: 26px 18px;
+            text-align: center;
+            color: var(--muted);
+            background: var(--panel-soft);
+        }
+
+        @media (max-width: 1180px) {
+            .hero,
+            .layout {
+                grid-template-columns: 1fr;
+            }
+
+            .sidebar {
+                position: static;
+            }
+        }
+
+        @media (max-width: 760px) {
+            .app {
+                width: min(100vw - 14px, 100%);
+                margin: 10px auto 18px;
+            }
+
+            .hero,
+            .panel {
+                padding: 16px;
+                border-radius: 18px;
+            }
+
+            .stats {
+                grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app">
+    <header class="hero">
+        <section>
+            <p class="eyebrow">RoutTraker</p>
+            <h1>Быстрый обход кабинетов</h1>
+            <p class="subtitle">
+                Одна строка на кабинет, крупные кнопки статуса и автосохранение комментариев. Интерфейс рассчитан на
+                быстрый недельный обход без переходов между экранами.
+            </p>
+        </section>
+        <aside class="hero-side">
+            <div class="toolbar">
+                <span class="pill">
+                    <span class="status-dot"></span>
+                    <span>Текущий обход: <strong id="round-number">№1</strong></span>
+                </span>
+                <span class="pill" id="current-user-pill">Пользователь</span>
+            </div>
+            <div class="stats">
+                <article class="stat">
+                    <span class="stat-label">Выполнено</span>
+                    <strong class="stat-value" id="summary-done">0</strong>
+                </article>
+                <article class="stat">
+                    <span class="stat-label">Проблемы</span>
+                    <strong class="stat-value" id="summary-problem">0</strong>
+                </article>
+                <article class="stat">
+                    <span class="stat-label">Не проверено</span>
+                    <strong class="stat-value" id="summary-unchecked">0</strong>
+                </article>
+                <article class="stat">
+                    <span class="stat-label">Прогресс</span>
+                    <strong class="stat-value" id="summary-progress">0%</strong>
+                </article>
+            </div>
+            <div class="meta-block">
+                <span id="round-meta">Обход ещё не запускали вручную</span>
+                <span id="sync-status">Синхронизация каждые 3 сек</span>
+                <span id="flash-message" class="flash"></span>
+            </div>
+            <div class="toolbar">
+                <button class="danger-button" id="reset-button" type="button">Начать следующий обход</button>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    <a class="ghost-button" href="{% url 'admin:index' %}">Админка</a>
+                    <form method="post" action="{% url 'logout' %}">
+                        {% csrf_token %}
+                        <button class="ghost-button" type="submit">Выйти</button>
+                    </form>
+                </div>
+            </div>
+        </aside>
+    </header>
+
+    <main class="layout">
+        <aside class="sidebar">
+            <section class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Автоотчет по проблемам</h2>
+                    <button class="copy-button" id="copy-report-button" type="button">Скопировать</button>
+                </div>
+                <textarea id="report-text" class="report-box" readonly></textarea>
+            </section>
+
+            <section class="panel">
+                <div class="panel-header">
+                    <h2 class="panel-title">Последние действия</h2>
+                    <span class="muted" id="generated-at">--</span>
+                </div>
+                <ul class="activity-list" id="activity-list"></ul>
+            </section>
+        </aside>
+
+        <section class="panel">
+            <div class="panel-header">
+                <div>
+                    <h2 class="panel-title">Таблица обхода</h2>
+                    <div class="muted">Lab1-Lab3 можно временно исключать из текущего обхода</div>
+                </div>
+                <div class="muted" id="active-count">0 из 0 кабинетов в работе</div>
+            </div>
+
+            <div class="table-wrap">
+                <div class="table-head">
+                    <div>Кабинет</div>
+                    <div>Участие</div>
+                    <div>Статус</div>
+                    <div>Комментарий</div>
+                    <div>Последнее изменение</div>
+                </div>
+                <div id="row-list" class="row-list"></div>
+            </div>
+        </section>
+    </main>
+</div>
+
+<noscript>Для живого обновления нужен JavaScript.</noscript>
+
+{{ dashboard_payload|json_script:"dashboard-data" }}
+
+<script>
+    const initialPayload = JSON.parse(document.getElementById("dashboard-data").textContent);
+    const api = {
+        state: "{% url 'dashboard_state' %}",
+        updateCheckTemplate: "{% url 'update_check' 999999 %}",
+        toggleCabinetTemplate: "{% url 'toggle_cabinet' 999999 %}",
+        reset: "{% url 'reset_checklist' %}",
+        login: "{% url 'login' %}",
+    };
+
+    let dashboardState = initialPayload;
+    let structureSignature = "";
+    const dirtyDrafts = new Set();
+    const draftTimers = new Map();
+
+    const rowList = document.getElementById("row-list");
+    const activityList = document.getElementById("activity-list");
+    const reportText = document.getElementById("report-text");
+    const resetButton = document.getElementById("reset-button");
+    const copyReportButton = document.getElementById("copy-report-button");
+
+    function getCookie(name) {
+        const cookies = document.cookie ? document.cookie.split(";") : [];
+        for (const rawCookie of cookies) {
+            const cookie = rawCookie.trim();
+            if (cookie.startsWith(`${name}=`)) {
+                return decodeURIComponent(cookie.slice(name.length + 1));
+            }
+        }
+        return "";
+    }
+
+    function escapeHtml(value) {
+        return String(value)
+            .replaceAll("&", "&amp;")
+            .replaceAll("<", "&lt;")
+            .replaceAll(">", "&gt;")
+            .replaceAll('"', "&quot;")
+            .replaceAll("'", "&#39;");
+    }
+
+    function currentSignature(payload) {
+        return payload.structure_signature.cabinets;
+    }
+
+    function updateCheckUrl(checkId) {
+        return api.updateCheckTemplate.replace("999999", String(checkId));
+    }
+
+    function toggleCabinetUrl(cabinetId) {
+        return api.toggleCabinetTemplate.replace("999999", String(cabinetId));
+    }
+
+    async function fetchJson(url, options = {}) {
+        const response = await fetch(url, {
+            headers: {
+                "Content-Type": "application/json",
+                "X-CSRFToken": getCookie("csrftoken"),
+                ...(options.headers || {}),
+            },
+            credentials: "same-origin",
+            ...options,
+        });
+
+        if (response.redirected && response.url.includes(api.login)) {
+            window.location.href = api.login;
+            throw new Error("Сессия истекла.");
+        }
+
+        const data = await response.json().catch(() => ({}));
+        if (!response.ok) {
+            throw new Error(data.error || "Не удалось выполнить запрос.");
+        }
+        return data;
+    }
+
+    function setFlash(message, tone = "") {
+        const flash = document.getElementById("flash-message");
+        flash.textContent = message;
+        flash.className = `flash${tone ? ` is-${tone}` : ""}`;
+    }
+
+    function setIndicator(checkId, message, tone = "") {
+        const indicator = document.querySelector(`[data-check-id="${checkId}"] .save-indicator`);
+        if (!indicator) {
+            return;
+        }
+        indicator.textContent = message;
+        indicator.className = `save-indicator${tone ? ` is-${tone}` : ""}`;
+    }
+
+    function statusButtons(cabinet) {
+        const disabled = cabinet.included ? "" : "disabled";
+        return `
+            <div class="segmented">
+                <button class="seg-button ${cabinet.status === "unchecked" ? "is-active" : ""}" data-action="status" data-status="unchecked" ${disabled}>Не проверено</button>
+                <button class="seg-button ${cabinet.status === "done" ? "is-active" : ""}" data-action="status" data-status="done" ${disabled}>Выполнено</button>
+                <button class="seg-button ${cabinet.status === "problem" ? "is-active" : ""}" data-action="status" data-status="problem" ${disabled}>Проблема</button>
+            </div>
+        `;
+    }
+
+    function lastChangeText(cabinet) {
+        if (cabinet.updated_by) {
+            return `${escapeHtml(cabinet.updated_by)} · ${escapeHtml(cabinet.updated_at)}`;
+        }
+        return "Пока не обновляли";
+    }
+
+    function participationCell(cabinet) {
+        if (!cabinet.can_skip) {
+            return '<span class="include-chip">Всегда в обходе</span>';
+        }
+
+        return `
+            <button class="ghost-button ${cabinet.included ? "" : "include-chip is-off"}" type="button" data-action="toggle" data-cabinet-id="${cabinet.id}">
+                ${cabinet.included ? "В обходе" : "Исключен"}
+            </button>
+        `;
+    }
+
+    function cabinetRowHtml(cabinet) {
+        const rowClass = `cabinet-row status-${cabinet.status}`;
+        const rowNote = cabinet.can_skip && cabinet.availability_updated_by
+            ? `Участие менял ${escapeHtml(cabinet.availability_updated_by)} · ${escapeHtml(cabinet.availability_updated_at)}`
+            : cabinet.included
+                ? "Кабинет участвует в текущем обходе"
+                : "Кабинет не учитывается в текущем обходе";
+
+        return `
+            <div class="${rowClass}" data-cabinet-id="${cabinet.id}" data-check-id="${cabinet.check_id}" data-status="${cabinet.status}">
+                <div class="cabinet-cell">
+                    <div class="cabinet-name">${escapeHtml(cabinet.name)}</div>
+                </div>
+                <div class="cabinet-cell">${participationCell(cabinet)}</div>
+                <div class="cabinet-cell">${statusButtons(cabinet)}</div>
+                <div class="cabinet-cell">
+                    <div class="comment-stack">
+                        <input
+                            class="comment-input"
+                            type="text"
+                            value="${escapeHtml(cabinet.comment)}"
+                            placeholder="Комментарий по кабинету"
+                            ${cabinet.included ? "" : "disabled"}
+                        >
+                        <div class="save-indicator"></div>
+                    </div>
+                </div>
+                <div class="cabinet-cell">
+                    <div>${lastChangeText(cabinet)}</div>
+                    <div class="row-note">${rowNote}</div>
+                </div>
+            </div>
+        `;
+    }
+
+    function renderRows(payload) {
+        if (!payload.cabinets.length) {
+            rowList.innerHTML = '<div class="empty-state">Кабинеты не найдены.</div>';
+            return;
+        }
+
+        rowList.innerHTML = payload.cabinets.map((cabinet) => cabinetRowHtml(cabinet)).join("");
+    }
+
+    function renderActivities(payload) {
+        if (!payload.activities.length) {
+            activityList.innerHTML = '<li class="activity-row">История появится после первых действий.</li>';
+            return;
+        }
+
+        activityList.innerHTML = payload.activities.map((activity) => `
+            <li class="activity-row">
+                <strong>${escapeHtml(activity.text)}</strong>
+                <span class="activity-time">${escapeHtml(activity.created_at)}</span>
+            </li>
+        `).join("");
+    }
+
+    function updateSummary(payload) {
+        document.getElementById("round-number").textContent = `№${payload.round.number}`;
+        document.getElementById("current-user-pill").textContent = payload.current_user;
+        document.getElementById("generated-at").textContent = `Обновлено ${payload.generated_at}`;
+        document.getElementById("sync-status").textContent = `Синхронизация каждые ${payload.poll_interval_ms / 1000} сек`;
+        document.getElementById("summary-done").textContent = payload.summary.done;
+        document.getElementById("summary-problem").textContent = payload.summary.problem;
+        document.getElementById("summary-unchecked").textContent = payload.summary.unchecked;
+        document.getElementById("summary-progress").textContent = `${payload.summary.percent}%`;
+        document.getElementById("active-count").textContent = `${payload.summary.active_cabinets} из ${payload.summary.all_cabinets} кабинетов в работе`;
+
+        const roundMeta = payload.round.started_at
+            ? `Обход открыт: ${payload.round.started_by || "Система"} · ${payload.round.started_at}`
+            : "Текущий обход ещё не сбрасывали вручную";
+        document.getElementById("round-meta").textContent = roundMeta;
+        reportText.value = payload.report_text;
+    }
+
+    function syncRows(payload) {
+        payload.cabinets.forEach((cabinet) => {
+            const currentRow = rowList.querySelector(`[data-cabinet-id="${cabinet.id}"]`);
+            if (!currentRow) {
+                return;
+            }
+
+            const input = currentRow.querySelector(".comment-input");
+            const draftKey = String(cabinet.check_id);
+            if (dirtyDrafts.has(draftKey) || document.activeElement === input) {
+                return;
+            }
+
+            const wrapper = document.createElement("div");
+            wrapper.innerHTML = cabinetRowHtml(cabinet).trim();
+            currentRow.replaceWith(wrapper.firstElementChild);
+        });
+    }
+
+    function applyPayload(payload, { forceStructure = false } = {}) {
+        const nextSignature = currentSignature(payload);
+        const structureChanged = forceStructure || structureSignature !== nextSignature;
+
+        dashboardState = payload;
+        updateSummary(payload);
+        renderActivities(payload);
+
+        if (structureChanged) {
+            draftTimers.forEach((timer) => clearTimeout(timer));
+            draftTimers.clear();
+            dirtyDrafts.clear();
+            renderRows(payload);
+            structureSignature = nextSignature;
+            return;
+        }
+
+        syncRows(payload);
+    }
+
+    async function refreshState() {
+        if (document.hidden) {
+            return;
+        }
+        try {
+            const payload = await fetchJson(api.state, { method: "GET" });
+            applyPayload(payload);
+        } catch (error) {
+            setFlash(error.message, "error");
+        }
+    }
+
+    async function saveCheck(checkId, body, successMessage = "Сохранено") {
+        setIndicator(checkId, "Сохраняю…", "saving");
+        try {
+            const payload = await fetchJson(updateCheckUrl(checkId), {
+                method: "POST",
+                body: JSON.stringify(body),
+            });
+            dirtyDrafts.delete(String(checkId));
+            applyPayload(payload);
+            setIndicator(checkId, successMessage, "success");
+            setFlash("");
+        } catch (error) {
+            setIndicator(checkId, error.message, "error");
+            setFlash(error.message, "error");
+        }
+    }
+
+    function queueCommentSave(checkId, input) {
+        const key = String(checkId);
+        dirtyDrafts.add(key);
+        setIndicator(checkId, "Черновик…", "saving");
+
+        if (draftTimers.has(key)) {
+            clearTimeout(draftTimers.get(key));
+        }
+
+        const timer = setTimeout(() => {
+            draftTimers.delete(key);
+            const row = input.closest("[data-check-id]");
+            saveCheck(checkId, {
+                status: row.dataset.status,
+                comment: input.value,
+            });
+        }, 800);
+
+        draftTimers.set(key, timer);
+    }
+
+    function flushCommentSave(checkId, input) {
+        const key = String(checkId);
+        if (!dirtyDrafts.has(key)) {
+            return;
+        }
+        if (draftTimers.has(key)) {
+            clearTimeout(draftTimers.get(key));
+            draftTimers.delete(key);
+        }
+
+        const row = input.closest("[data-check-id]");
+        saveCheck(checkId, {
+            status: row.dataset.status,
+            comment: input.value,
+        });
+    }
+
+    resetButton.addEventListener("click", async () => {
+        const confirmed = window.confirm("Начать следующий обход и очистить текущие статусы и комментарии?");
+        if (!confirmed) {
+            return;
+        }
+
+        try {
+            const payload = await fetchJson(api.reset, {
+                method: "POST",
+                body: JSON.stringify({}),
+            });
+            applyPayload(payload);
+            setFlash("Новый обход открыт.");
+        } catch (error) {
+            setFlash(error.message, "error");
+        }
+    });
+
+    copyReportButton.addEventListener("click", async () => {
+        try {
+            await navigator.clipboard.writeText(reportText.value);
+            setFlash("Автоотчет скопирован.");
+        } catch (error) {
+            setFlash("Не удалось скопировать отчет.", "error");
+        }
+    });
+
+    document.addEventListener("click", async (event) => {
+        const actionTarget = event.target.closest("[data-action]");
+        if (!actionTarget) {
+            return;
+        }
+
+        const action = actionTarget.dataset.action;
+
+        if (action === "status") {
+            const row = actionTarget.closest("[data-check-id]");
+            const checkId = row.dataset.checkId;
+            const input = row.querySelector(".comment-input");
+            row.dataset.status = actionTarget.dataset.status;
+            await saveCheck(checkId, {
+                status: actionTarget.dataset.status,
+                comment: input.value,
+            });
+            return;
+        }
+
+        if (action === "toggle") {
+            const cabinetId = actionTarget.dataset.cabinetId;
+            try {
+                const payload = await fetchJson(toggleCabinetUrl(cabinetId), {
+                    method: "POST",
+                    body: JSON.stringify({}),
+                });
+                applyPayload(payload);
+                setFlash("Участие кабинета обновлено.");
+            } catch (error) {
+                setFlash(error.message, "error");
+            }
+        }
+    });
+
+    document.addEventListener("input", (event) => {
+        const input = event.target.closest(".comment-input");
+        if (!input) {
+            return;
+        }
+        const row = input.closest("[data-check-id]");
+        queueCommentSave(row.dataset.checkId, input);
+    });
+
+    document.addEventListener(
+        "blur",
+        (event) => {
+            const input = event.target.closest(".comment-input");
+            if (!input) {
+                return;
+            }
+            const row = input.closest("[data-check-id]");
+            flushCommentSave(row.dataset.checkId, input);
+        },
+        true,
+    );
+
+    window.addEventListener("focus", refreshState);
+
+    applyPayload(initialPayload, { forceStructure: true });
+    window.setInterval(refreshState, initialPayload.poll_interval_ms || 3000);
+</script>
+</body>
+</html>
