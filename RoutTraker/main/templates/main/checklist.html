@@ -331,6 +331,41 @@
             font-size: 1rem;
         }
 
+        .mobile-row-summary {
+            display: none;
+        }
+
+        .status-badge {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            min-height: 30px;
+            padding: 0 10px;
+            border-radius: 999px;
+            border: 1px solid var(--line);
+            font-size: 0.88rem;
+            font-weight: 700;
+            white-space: nowrap;
+        }
+
+        .status-badge.is-unchecked {
+            background: var(--unchecked-soft);
+            border-color: #d9c8a3;
+            color: var(--unchecked);
+        }
+
+        .status-badge.is-done {
+            background: var(--done-soft);
+            border-color: #b8dfc7;
+            color: var(--done);
+        }
+
+        .status-badge.is-problem {
+            background: var(--problem-soft);
+            border-color: #efc0b2;
+            color: var(--problem);
+        }
+
         .include-chip {
             display: inline-flex;
             align-items: center;
@@ -427,6 +462,83 @@
             background: var(--panel-soft);
         }
 
+        .modal-open {
+            overflow: hidden;
+        }
+
+        .modal-overlay {
+            position: fixed;
+            inset: 0;
+            z-index: 20;
+            display: grid;
+            place-items: center;
+            padding: 18px;
+            background: rgba(29, 37, 48, 0.36);
+            backdrop-filter: blur(4px);
+        }
+
+        .modal-overlay[hidden] {
+            display: none;
+        }
+
+        .cabinet-modal {
+            width: min(560px, 100%);
+            max-height: calc(100dvh - 36px);
+            overflow: auto;
+            padding: 18px;
+            border: 1px solid rgba(255, 255, 255, 0.74);
+            border-radius: var(--radius-xl);
+            background: var(--panel);
+            box-shadow: 0 24px 70px rgba(29, 37, 48, 0.22);
+        }
+
+        .modal-header,
+        .modal-footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+        }
+
+        .modal-header {
+            margin-bottom: 16px;
+        }
+
+        .modal-title {
+            margin: 0;
+            font-family: "Fraunces", Georgia, serif;
+            font-size: 1.6rem;
+            line-height: 1.08;
+        }
+
+        .modal-content {
+            display: grid;
+            gap: 14px;
+        }
+
+        .modal-section {
+            display: grid;
+            gap: 8px;
+            padding: 14px;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-lg);
+            background: var(--panel-soft);
+        }
+
+        .modal-label {
+            color: var(--muted);
+            font-size: 0.9rem;
+            font-weight: 700;
+        }
+
+        .modal-comment-input {
+            min-height: 48px;
+        }
+
+        .modal-footer {
+            margin-top: 16px;
+        }
+
         @media (max-width: 1180px) {
             .hero,
             .layout {
@@ -435,6 +547,81 @@
 
             .sidebar {
                 position: static;
+            }
+
+            .table-wrap {
+                overflow: visible;
+                border: 0;
+                border-radius: 0;
+            }
+
+            .table-head {
+                display: none;
+            }
+
+            .row-list {
+                gap: 10px;
+            }
+
+            .cabinet-row {
+                min-width: 0;
+                grid-template-columns: minmax(0, 1fr) auto;
+                gap: 12px;
+                align-items: start;
+                padding: 14px;
+                border: 1px solid var(--line);
+                border-radius: var(--radius-lg);
+                box-shadow: 0 10px 24px rgba(33, 38, 46, 0.05);
+            }
+
+            .cabinet-row + .cabinet-row {
+                border-top: 1px solid var(--line);
+            }
+
+            .cabinet-cell:nth-child(3),
+            .cabinet-cell:nth-child(4),
+            .cabinet-cell:nth-child(5) {
+                display: none;
+            }
+
+            .cabinet-cell:nth-child(2) {
+                justify-self: end;
+            }
+
+            .mobile-row-summary {
+                display: grid;
+                gap: 8px;
+                margin-top: 8px;
+            }
+
+            .mobile-row-line {
+                display: flex;
+                flex-wrap: wrap;
+                gap: 8px;
+                align-items: center;
+                min-width: 0;
+            }
+
+            .mobile-comment {
+                min-width: 0;
+                color: var(--muted);
+                overflow: hidden;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .mobile-edit-button {
+                width: fit-content;
+            }
+
+            .modal-content .segmented {
+                display: grid;
+                grid-template-columns: repeat(3, minmax(0, 1fr));
+            }
+
+            .modal-content .seg-button {
+                min-height: 46px;
+                padding: 0 8px;
             }
         }
 
@@ -452,6 +639,86 @@
 
             .stats {
                 grid-template-columns: repeat(2, minmax(0, 1fr));
+            }
+
+            h1 {
+                font-size: 1.75rem;
+            }
+
+            .subtitle {
+                line-height: 1.45;
+            }
+
+            .toolbar {
+                align-items: stretch;
+            }
+
+            .toolbar > *,
+            .toolbar form,
+            .toolbar .ghost-button,
+            .toolbar .danger-button {
+                width: 100%;
+            }
+
+            .pill {
+                width: 100%;
+                justify-content: center;
+            }
+
+            .panel-header {
+                align-items: flex-start;
+                flex-direction: column;
+            }
+
+            .report-box {
+                min-height: 140px;
+            }
+
+            .cabinet-row {
+                grid-template-columns: 1fr;
+            }
+
+            .cabinet-cell:nth-child(2) {
+                justify-self: stretch;
+            }
+
+            .cabinet-cell:nth-child(2) .ghost-button,
+            .include-chip {
+                width: 100%;
+            }
+
+            .mobile-edit-button {
+                width: 100%;
+            }
+
+            .modal-overlay {
+                align-items: end;
+                padding: 8px;
+            }
+
+            .cabinet-modal {
+                width: 100%;
+                max-height: calc(100dvh - 16px);
+                padding: 16px;
+                border-radius: 20px 20px 14px 14px;
+            }
+
+            .modal-header {
+                align-items: flex-start;
+            }
+
+            .modal-title {
+                font-size: 1.45rem;
+            }
+
+            .modal-content .segmented {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content .seg-button,
+            .modal-content .ghost-button,
+            .modal-footer .primary-button {
+                width: 100%;
             }
         }
     </style>
@@ -553,6 +820,23 @@
     </main>
 </div>
 
+<div class="modal-overlay" id="cabinet-modal" hidden>
+    <section class="cabinet-modal" role="dialog" aria-modal="true" aria-labelledby="modal-title">
+        <div class="modal-header">
+            <div>
+                <p class="eyebrow">Редактирование</p>
+                <h2 class="modal-title" id="modal-title">Кабинет</h2>
+            </div>
+            <button class="ghost-button" id="modal-close-button" type="button" aria-label="Закрыть окно">Закрыть</button>
+        </div>
+        <div class="modal-content" id="modal-content"></div>
+        <div class="modal-footer">
+            <span class="muted">Изменения сохраняются автоматически</span>
+            <button class="primary-button" id="modal-done-button" type="button">Готово</button>
+        </div>
+    </section>
+</div>
+
 <noscript>Для живого обновления нужен JavaScript.</noscript>
 
 {{ dashboard_payload|json_script:"dashboard-data" }}
@@ -569,6 +853,8 @@
 
     let dashboardState = initialPayload;
     let structureSignature = "";
+    let activeModalCabinetId = null;
+    let lastFocusedElement = null;
     const dirtyDrafts = new Set();
     const draftTimers = new Map();
 
@@ -577,6 +863,11 @@
     const reportText = document.getElementById("report-text");
     const resetButton = document.getElementById("reset-button");
     const copyReportButton = document.getElementById("copy-report-button");
+    const cabinetModal = document.getElementById("cabinet-modal");
+    const modalContent = document.getElementById("modal-content");
+    const modalTitle = document.getElementById("modal-title");
+    const modalCloseButton = document.getElementById("modal-close-button");
+    const modalDoneButton = document.getElementById("modal-done-button");
 
     function getCookie(name) {
         const cookies = document.cookie ? document.cookie.split(";") : [];
@@ -610,6 +901,10 @@
         return api.toggleCabinetTemplate.replace("999999", String(cabinetId));
     }
 
+    function findCabinet(cabinetId) {
+        return dashboardState.cabinets.find((cabinet) => String(cabinet.id) === String(cabinetId));
+    }
+
     async function fetchJson(url, options = {}) {
         const response = await fetch(url, {
             headers: {
@@ -640,12 +935,21 @@
     }
 
     function setIndicator(checkId, message, tone = "") {
-        const indicator = document.querySelector(`[data-check-id="${checkId}"] .save-indicator`);
-        if (!indicator) {
+        const indicators = document.querySelectorAll(`[data-check-id="${checkId}"] .save-indicator`);
+        if (!indicators.length) {
             return;
         }
-        indicator.textContent = message;
-        indicator.className = `save-indicator${tone ? ` is-${tone}` : ""}`;
+        indicators.forEach((indicator) => {
+            indicator.textContent = message;
+            indicator.className = `save-indicator${tone ? ` is-${tone}` : ""}`;
+        });
+    }
+
+    function updateLocalStatusSelection(container, status) {
+        container.dataset.status = status;
+        container.querySelectorAll("[data-action='status']").forEach((button) => {
+            button.classList.toggle("is-active", button.dataset.status === status);
+        });
     }
 
     function statusButtons(cabinet) {
@@ -664,6 +968,18 @@
             return `${escapeHtml(cabinet.updated_by)} · ${escapeHtml(cabinet.updated_at)}`;
         }
         return "Пока не обновляли";
+    }
+
+    function statusBadge(cabinet) {
+        return `<span class="status-badge is-${cabinet.status}">${escapeHtml(cabinet.status_label)}</span>`;
+    }
+
+    function commentPreview(cabinet) {
+        const comment = cabinet.comment.trim();
+        if (comment) {
+            return escapeHtml(comment);
+        }
+        return cabinet.included ? "Комментарий не указан" : "Не участвует в текущем обходе";
     }
 
     function participationCell(cabinet) {
@@ -690,6 +1006,16 @@
             <div class="${rowClass}" data-cabinet-id="${cabinet.id}" data-check-id="${cabinet.check_id}" data-status="${cabinet.status}">
                 <div class="cabinet-cell">
                     <div class="cabinet-name">${escapeHtml(cabinet.name)}</div>
+                    <div class="mobile-row-summary">
+                        <div class="mobile-row-line">
+                            ${statusBadge(cabinet)}
+                            <span class="mobile-comment">${commentPreview(cabinet)}</span>
+                        </div>
+                        <div class="row-note">${lastChangeText(cabinet)}</div>
+                        <button class="ghost-button mobile-edit-button" type="button" data-action="open-modal" data-cabinet-id="${cabinet.id}">
+                            Открыть
+                        </button>
+                    </div>
                 </div>
                 <div class="cabinet-cell">${participationCell(cabinet)}</div>
                 <div class="cabinet-cell">${statusButtons(cabinet)}</div>
@@ -711,6 +1037,99 @@
                 </div>
             </div>
         `;
+    }
+
+    function cabinetModalHtml(cabinet) {
+        const rowNote = cabinet.can_skip && cabinet.availability_updated_by
+            ? `Участие менял ${escapeHtml(cabinet.availability_updated_by)} · ${escapeHtml(cabinet.availability_updated_at)}`
+            : cabinet.included
+                ? "Кабинет участвует в текущем обходе"
+                : "Кабинет не учитывается в текущем обходе";
+
+        return `
+            <div data-cabinet-id="${cabinet.id}" data-check-id="${cabinet.check_id}" data-status="${cabinet.status}">
+                <div class="modal-section">
+                    <span class="modal-label">Участие</span>
+                    ${participationCell(cabinet)}
+                    <span class="row-note">${rowNote}</span>
+                </div>
+                <div class="modal-section">
+                    <span class="modal-label">Статус</span>
+                    ${statusButtons(cabinet)}
+                </div>
+                <div class="modal-section">
+                    <label class="modal-label" for="modal-comment-input">Комментарий</label>
+                    <input
+                        class="comment-input modal-comment-input"
+                        id="modal-comment-input"
+                        type="text"
+                        value="${escapeHtml(cabinet.comment)}"
+                        placeholder="Комментарий по кабинету"
+                        ${cabinet.included ? "" : "disabled"}
+                    >
+                    <div class="save-indicator"></div>
+                </div>
+                <div class="modal-section">
+                    <span class="modal-label">Последнее изменение</span>
+                    <span>${lastChangeText(cabinet)}</span>
+                </div>
+            </div>
+        `;
+    }
+
+    function syncModal({ force = false } = {}) {
+        if (!activeModalCabinetId) {
+            return;
+        }
+
+        const cabinet = findCabinet(activeModalCabinetId);
+        if (!cabinet) {
+            closeCabinetModal();
+            return;
+        }
+
+        const currentModalState = modalContent.querySelector("[data-check-id]");
+        const currentInput = currentModalState?.querySelector(".comment-input");
+        const draftKey = String(cabinet.check_id);
+        if (!force && (dirtyDrafts.has(draftKey) || document.activeElement === currentInput)) {
+            return;
+        }
+
+        modalTitle.textContent = cabinet.name;
+        modalContent.innerHTML = cabinetModalHtml(cabinet);
+    }
+
+    function openCabinetModal(cabinetId) {
+        activeModalCabinetId = String(cabinetId);
+        lastFocusedElement = document.activeElement;
+        syncModal({ force: true });
+        cabinetModal.hidden = false;
+        document.body.classList.add("modal-open");
+        setTimeout(() => {
+            const input = modalContent.querySelector(".comment-input:not(:disabled)");
+            (input || modalCloseButton).focus();
+        }, 0);
+    }
+
+    function closeCabinetModal() {
+        const currentModalState = modalContent.querySelector("[data-check-id]");
+        const currentInput = currentModalState?.querySelector(".comment-input");
+        if (currentModalState && currentInput) {
+            flushCommentSave(currentModalState.dataset.checkId, currentInput);
+        }
+
+        activeModalCabinetId = null;
+        cabinetModal.hidden = true;
+        document.body.classList.remove("modal-open");
+        modalContent.innerHTML = "";
+        if (
+            lastFocusedElement
+            && document.contains(lastFocusedElement)
+            && typeof lastFocusedElement.focus === "function"
+        ) {
+            lastFocusedElement.focus();
+        }
+        lastFocusedElement = null;
     }
 
     function renderRows(payload) {
@@ -787,10 +1206,12 @@
             dirtyDrafts.clear();
             renderRows(payload);
             structureSignature = nextSignature;
+            syncModal({ force: true });
             return;
         }
 
         syncRows(payload);
+        syncModal();
     }
 
     async function refreshState() {
@@ -887,6 +1308,21 @@
         }
     });
 
+    modalCloseButton.addEventListener("click", closeCabinetModal);
+    modalDoneButton.addEventListener("click", closeCabinetModal);
+
+    cabinetModal.addEventListener("click", (event) => {
+        if (event.target === cabinetModal) {
+            closeCabinetModal();
+        }
+    });
+
+    document.addEventListener("keydown", (event) => {
+        if (event.key === "Escape" && !cabinetModal.hidden) {
+            closeCabinetModal();
+        }
+    });
+
     document.addEventListener("click", async (event) => {
         const actionTarget = event.target.closest("[data-action]");
         if (!actionTarget) {
@@ -895,11 +1331,16 @@
 
         const action = actionTarget.dataset.action;
 
+        if (action === "open-modal") {
+            openCabinetModal(actionTarget.dataset.cabinetId);
+            return;
+        }
+
         if (action === "status") {
             const row = actionTarget.closest("[data-check-id]");
             const checkId = row.dataset.checkId;
             const input = row.querySelector(".comment-input");
-            row.dataset.status = actionTarget.dataset.status;
+            updateLocalStatusSelection(row, actionTarget.dataset.status);
             await saveCheck(checkId, {
                 status: actionTarget.dataset.status,
                 comment: input.value,
