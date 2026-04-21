@@ -176,6 +176,14 @@
             top: 16px;
         }
 
+        .report-panel {
+            order: 1;
+        }
+
+        .activity-panel {
+            order: 2;
+        }
+
         .panel {
             padding: 18px;
         }
@@ -547,6 +555,19 @@
 
             .sidebar {
                 position: static;
+                display: contents;
+            }
+
+            .report-panel {
+                order: 1;
+            }
+
+            .checklist-panel {
+                order: 2;
+            }
+
+            .activity-panel {
+                order: 3;
             }
 
             .table-wrap {
@@ -780,7 +801,7 @@
 
     <main class="layout">
         <aside class="sidebar">
-            <section class="panel">
+            <section class="panel report-panel">
                 <div class="panel-header">
                     <h2 class="panel-title">Автоотчет по проблемам</h2>
                     <button class="copy-button" id="copy-report-button" type="button">Скопировать</button>
@@ -788,7 +809,7 @@
                 <textarea id="report-text" class="report-box" readonly></textarea>
             </section>
 
-            <section class="panel">
+            <section class="panel activity-panel">
                 <div class="panel-header">
                     <h2 class="panel-title">Последние действия</h2>
                     <span class="muted" id="generated-at">--</span>
@@ -797,7 +818,7 @@
             </section>
         </aside>
 
-        <section class="panel">
+        <section class="panel checklist-panel">
             <div class="panel-header">
                 <div>
                     <h2 class="panel-title">Таблица обхода</h2>
