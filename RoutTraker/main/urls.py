@@ -13,6 +13,11 @@ urlpatterns = [
     path("logout/", auth_views.LogoutView.as_view(), name="logout"),
     path("", views.checklist_dashboard, name="checklist_dashboard"),
     path("api/state/", views.dashboard_state, name="dashboard_state"),
+    path(
+        "api/report/problems.xlsx",
+        views.problem_report_excel,
+        name="problem_report_excel",
+    ),
     path("api/checks/<int:check_id>/", views.update_check, name="update_check"),
     path(
         "api/cabinets/<int:cabinet_id>/toggle/",

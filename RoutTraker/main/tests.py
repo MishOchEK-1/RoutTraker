@@ -1,4 +1,6 @@
 import json
+from io import BytesIO
+from zipfile import ZipFile
 
 from django.contrib.auth import get_user_model
 from django.test import TestCase
@@ -99,3 +101,29 @@ class ChecklistDashboardTests(TestCase):
                 details="открыл обход №2",
             ).exists()
         )
+
+    def test_problem_report_excel_downloads_xlsx(self):
+        check = self.get_c1_check()
+        check.status = CabinetCheck.Status.PROBLEM
+        check.comment = "Нужно заменить лампу"
+        check.updated_by = self.user
+        check.save()
+
+        response = self.client.get(reverse("problem_report_excel"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        self.assertIn(
+            'attachment; filename="routtraker-report-round-1.xlsx"',
+            response["Content-Disposition"],
+        )
+
+        with ZipFile(BytesIO(response.content)) as workbook:
+            sheet_xml = workbook.read("xl/worksheets/sheet1.xml").decode("utf-8")
+
+        self.assertIn("Автоотчет по обходу", sheet_xml)
+        self.assertIn("C1", sheet_xml)
+        self.assertIn("Нужно заменить лампу", sheet_xml)

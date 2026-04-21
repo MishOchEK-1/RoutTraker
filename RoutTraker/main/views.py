@@ -1,4 +1,7 @@
 import json
+from io import BytesIO
+from xml.sax.saxutils import escape
+from zipfile import ZIP_DEFLATED, ZipFile
 
 from django.contrib.auth.decorators import login_required
 from django.http import HttpRequest, HttpResponse, JsonResponse
@@ -126,6 +129,151 @@ def build_problem_report(round_number: int, cabinets: list[dict]) -> str:
     )
 
 
+def excel_column_name(index: int) -> str:
+    name = ""
+    while index:
+        index, remainder = divmod(index - 1, 26)
+        name = chr(65 + remainder) + name
+    return name
+
+
+def excel_cell(
+    *,
+    row_index: int,
+    column_index: int,
+    value,
+    style_id: int = 0,
+) -> str:
+    cell_ref = f"{excel_column_name(column_index)}{row_index}"
+    text = escape(str(value), {'"': "&quot;"})
+    style = f' s="{style_id}"' if style_id else ""
+    return f'<c r="{cell_ref}" t="inlineStr"{style}><is><t>{text}</t></is></c>'
+
+
+def build_xlsx(rows: list[list], bold_rows: set[int] | None = None) -> bytes:
+    bold_rows = bold_rows or set()
+    sheet_rows = []
+
+    for row_index, row in enumerate(rows, start=1):
+        cells = []
+        for column_index, value in enumerate(row, start=1):
+            if value in (None, ""):
+                continue
+            style_id = 1 if row_index in bold_rows else 0
+            cells.append(
+                excel_cell(
+                    row_index=row_index,
+                    column_index=column_index,
+                    value=value,
+                    style_id=style_id,
+                )
+            )
+        sheet_rows.append(f'<row r="{row_index}">{"".join(cells)}</row>')
+
+    sheet_xml = f"""<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+    <cols>
+        <col min="1" max="1" width="18" customWidth="1"/>
+        <col min="2" max="2" width="46" customWidth="1"/>
+        <col min="3" max="3" width="18" customWidth="1"/>
+        <col min="4" max="4" width="22" customWidth="1"/>
+        <col min="5" max="5" width="18" customWidth="1"/>
+    </cols>
+    <sheetData>{"".join(sheet_rows)}</sheetData>
+</worksheet>"""
+
+    workbook_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"
+    xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">
+    <sheets>
+        <sheet name="Автоотчет" sheetId="1" r:id="rId1"/>
+    </sheets>
+</workbook>"""
+
+    styles_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+    <fonts count="2">
+        <font><sz val="11"/><name val="Calibri"/></font>
+        <font><b/><sz val="11"/><name val="Calibri"/></font>
+    </fonts>
+    <fills count="2">
+        <fill><patternFill patternType="none"/></fill>
+        <fill><patternFill patternType="gray125"/></fill>
+    </fills>
+    <borders count="1"><border/></borders>
+    <cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+    <cellXfs count="2">
+        <xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+        <xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0"/>
+    </cellXfs>
+</styleSheet>"""
+
+    content_types_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types">
+    <Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/>
+    <Default Extension="xml" ContentType="application/xml"/>
+    <Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>
+    <Override PartName="/xl/worksheets/sheet1.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>
+    <Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>
+</Types>"""
+
+    root_rels_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+    <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/>
+</Relationships>"""
+
+    workbook_rels_xml = """<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">
+    <Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet1.xml"/>
+    <Relationship Id="rId2" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/>
+</Relationships>"""
+
+    output = BytesIO()
+    with ZipFile(output, "w", ZIP_DEFLATED) as workbook:
+        workbook.writestr("[Content_Types].xml", content_types_xml)
+        workbook.writestr("_rels/.rels", root_rels_xml)
+        workbook.writestr("xl/workbook.xml", workbook_xml)
+        workbook.writestr("xl/_rels/workbook.xml.rels", workbook_rels_xml)
+        workbook.writestr("xl/worksheets/sheet1.xml", sheet_xml)
+        workbook.writestr("xl/styles.xml", styles_xml)
+
+    return output.getvalue()
+
+
+def build_problem_report_xlsx(payload: dict) -> bytes:
+    problem_cabinets = [
+        cabinet
+        for cabinet in payload["cabinets"]
+        if cabinet["included"] and cabinet["status"] == CabinetCheck.Status.PROBLEM
+    ]
+
+    rows = [
+        ["Автоотчет по обходу", f"№{payload['round']['number']}"],
+        ["Сформировано", payload["generated_at"]],
+        ["Проблемных кабинетов", payload["summary"]["problem"]],
+        [],
+        ["Кабинет", "Комментарий", "Статус", "Обновил", "Обновлено"],
+    ]
+
+    if problem_cabinets:
+        rows.extend(
+            [
+                [
+                    cabinet["name"],
+                    cabinet["comment"].strip() or "Комментарий не указан",
+                    cabinet["status_label"],
+                    cabinet["updated_by"],
+                    cabinet["updated_at"],
+                ]
+                for cabinet in problem_cabinets
+            ]
+        )
+    else:
+        rows.append(["Проблемы по кабинетам не зафиксированы."])
+
+    return build_xlsx(rows, bold_rows={1, 5})
+
+
 def build_dashboard_payload(request: HttpRequest) -> dict:
     ensure_checks_exist()
     state = get_inspection_state()
@@ -234,6 +382,21 @@ def checklist_dashboard(request: HttpRequest) -> HttpResponse:
 @require_GET
 def dashboard_state(request: HttpRequest) -> JsonResponse:
     return JsonResponse(build_dashboard_payload(request))
+
+
+@login_required
+@require_GET
+def problem_report_excel(request: HttpRequest) -> HttpResponse:
+    payload = build_dashboard_payload(request)
+    filename = f"routtraker-report-round-{payload['round']['number']}.xlsx"
+    response = HttpResponse(
+        build_problem_report_xlsx(payload),
+        content_type=(
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+        ),
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
 
 
 @login_required

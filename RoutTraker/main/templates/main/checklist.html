@@ -212,10 +212,14 @@
 
         .ghost-button,
         .copy-button {
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
             padding: 10px 14px;
             border: 1px solid var(--line);
             background: white;
             color: var(--ink);
+            text-decoration: none;
         }
 
         .primary-button {
@@ -804,7 +808,7 @@
             <section class="panel report-panel">
                 <div class="panel-header">
                     <h2 class="panel-title">Автоотчет по проблемам</h2>
-                    <button class="copy-button" id="copy-report-button" type="button">Скопировать</button>
+                    <a class="copy-button" href="{% url 'problem_report_excel' %}" download>Скачать Excel</a>
                 </div>
                 <textarea id="report-text" class="report-box" readonly></textarea>
             </section>
@@ -883,7 +887,6 @@
     const activityList = document.getElementById("activity-list");
     const reportText = document.getElementById("report-text");
     const resetButton = document.getElementById("reset-button");
-    const copyReportButton = document.getElementById("copy-report-button");
     const cabinetModal = document.getElementById("cabinet-modal");
     const modalContent = document.getElementById("modal-content");
     const modalTitle = document.getElementById("modal-title");
@@ -1317,15 +1320,6 @@
             setFlash("Новый обход открыт.");
         } catch (error) {
             setFlash(error.message, "error");
-        }
-    });
-
-    copyReportButton.addEventListener("click", async () => {
-        try {
-            await navigator.clipboard.writeText(reportText.value);
-            setFlash("Автоотчет скопирован.");
-        } catch (error) {
-            setFlash("Не удалось скопировать отчет.", "error");
         }
     });
 
