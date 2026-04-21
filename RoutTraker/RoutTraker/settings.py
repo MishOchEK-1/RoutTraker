@@ -11,7 +11,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # SECURITY WARNING: keep the secret key used in production secret!
 SECRET_KEY = os.getenv(
     "DJANGO_SECRET_KEY",
-    "dev-only-please-change-this-secret-key-8eR7n4Qm2Lp9Zx6Kd1Hy3Vt5Ua0Ws",
+    "i*$@kfj!uikfaw71ij)(sy=a*dh6m7x*9*7pmb0a3sma(-r^f2",
 )
 
 # SECURITY WARNING: don't run with debug turned on in production!
